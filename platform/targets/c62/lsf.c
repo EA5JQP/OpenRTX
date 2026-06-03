@@ -35,37 +35,10 @@ int lsf_controller_init(void)
 	printk("Checking DSP diag (0x3070000C): 0x%08x\n", *(volatile uint32_t *)0x3070000C);
 	printk("Checking DSP check2 (0x30700018): 0x%08x\n", *(volatile uint32_t *)0x30700018);
 
-	/* Initialize LSF */
+	/* Initialize LSF and start polling DSP diag */
 	lsf_init();
-	printk("LSF Initialized. Connecting to DSP...\n");
+	printk("LSF Initialized. Monitoring DSP diag...\n");
 
-	lsf_connect();
-	printk("[ARM] Connected to DSP!\n");
-
-	/* Wait for ready signal */
-	ICFenceHandle fence = IC_Proxy_getRemoteFence(0);
-	printk("LSF Connected. Waiting for remote fence...\n");
-
-	ICFence_syncWithRemote(fence);
-	printk("DSP Synced. Waiting for DSP ready...\n");
-
-	uint32_t val;
-	ICFence_wait(fence, &val);
-	printk("DSP Ready! Fence value: 0x%08x\n", val);
-
-	STRUCT_SECTION_FOREACH(lsf_service, service) {
-		printk("Initializing service %s\n", service->name);
-		ret = service->init();
-		if (ret != 0) {
-			printk("ERROR: Failed to init service %s: %d\n", service->name, ret);
-			return ret;
-		}
-	}
-	printk("All services initialized\n");
-	inited = true;
-
-	/* Monitor DSP diag while running */
-	printk("Monitoring DSP diag...\n");
 	while (1) {
 		k_sleep(K_MSEC(1000));
 		dcache_invalidate_range(0x30700000, 0x30700020);
