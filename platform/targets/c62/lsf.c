@@ -42,8 +42,9 @@ int lsf_controller_init(void)
 	while (1) {
 		k_sleep(K_MSEC(1000));
 		dcache_invalidate_range(0x30700000, 0x30700020);
-		uint32_t d = *(volatile uint32_t *)0x3070000C;
-		printk("[DSP] diag=0x%08x\n", d);
+		uint32_t d  = *(volatile uint32_t *)0x3070000C;
+		uint32_t d2 = *(volatile uint32_t *)0x30700010;
+		printk("[DSP] prime=0x%08x  mac=0x%08x\n", d, d2);
 	}
 
 	STRUCT_SECTION_FOREACH(lsf_service, service) {
