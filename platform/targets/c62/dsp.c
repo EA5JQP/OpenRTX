@@ -33,6 +33,7 @@ void lsf_dsp_load(const void *addr, uint32_t size)
 {
 	/* Enable clock for DSP */
 	__HAL_CRM_CP_CLK_ENABLE();
+	__HAL_CRM_NPU_CLK_ENABLE();
 
 	/* Set boot address */
 	__HAL_SYS_CP_SET_BOOT_ADDR(CP_PSRAM_BASE);
