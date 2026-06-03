@@ -3,6 +3,7 @@
 # Call this file with "lisa zep exec ./run_build_c62.sh"
 
 # Make call via lisa easier
+export PATH="$PATH:/home/lisa/.local/bin:/home/lisa/.listenai/lisa-zephyr/venv/bin"
 rm -rf build; meson setup build; meson compile -C build openrtx_c62
 
 # Do this at your own risk! This may brick your device or start a fire!
