@@ -37,7 +37,12 @@ int lsf_controller_init(void)
 
 	/* Initialize LSF */
 	lsf_init();
-	printk("LSF Initialized. Connecting...\n");
+	printk("LSF Initialized. Waiting for DSP...\n");
+
+	/* Give DSP time to boot and start RPC server */
+	k_sleep(K_SECONDS(3));
+
+	printk("Connecting...\n");
 	lsf_connect();
 	printk("LSF Connected. Monitoring DSP diag...\n");
 
