@@ -73,3 +73,4 @@ scripts/get_demod_log
 
 # OpenRTX Codeplugs
 *.rtxc
+subprojects/.wraplock
