@@ -48,6 +48,8 @@ static int8_t _urpc_wait_sync_client(uint32_t section_id, urpc_frame* frame)
 int8_t urpc_trans_sync_client(urpc_client_stub* stub, urpc_frame* send, urpc_frame* recv)
 {
 	int8_t err = URPC_SUCCESS, chn;
+	static int call_count = 0;
+	call_count++;
 
 	if(client_state < URPC_STATE_IDLE) {
 		return URPC_ERROR;
@@ -64,11 +66,18 @@ int8_t urpc_trans_sync_client(urpc_client_stub* stub, urpc_frame* send, urpc_fra
 
 	urpc_sem_take(sync_sema, urpc_max_delay);
 
+	if ((call_count & 0x3FF) == 1)
+		printk("trans_sync: sem taken, sending...\n");
+
 	urpc_queue_reset(sync_queue);  // delete invalid sync-frames
     err = urpc_send((urpc_stub*)stub, URPC_CONN_CLIENT, send);
 
     if(err == URPC_SUCCESS) {
+    	if ((call_count & 0x3FF) == 1)
+    		printk("trans_sync: send OK, waiting for response...\n");
     	err = _urpc_wait_sync_client(send->header.session, recv);
+    	if ((call_count & 0x3FF) == 1)
+    		printk("trans_sync: wait result=%d\n", err);
     	stub->_peek(URPC_CONN_CLIENT, (uint8_t *)&recv_frame, 0); // receive next package
     	urpc_sem_give(sync_sema);
     	if(err == URPC_SUCCESS) {
