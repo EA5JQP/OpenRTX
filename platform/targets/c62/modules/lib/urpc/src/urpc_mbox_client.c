@@ -41,7 +41,9 @@ urpc_client_stub* urpc_mbox_get_client_stub(void) {
 int8_t urpc_mbox_send_client(urpc_connection* s_conn, uint8_t* buf, uint16_t chn)
 {
 	urpc_sem_take(send_sema, urpc_max_delay);
-	return urpc_mbox_send(s_conn, buf, chn);
+	int8_t ret = urpc_mbox_send(s_conn, buf, chn);
+	urpc_sem_give(send_sema);  /* release immediately — ISR for send-complete may not fire */
+	return ret;
 }
 
 int8_t urpc_mbox_init_client(urpc_client* client) {
