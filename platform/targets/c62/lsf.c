@@ -35,37 +35,15 @@ int lsf_controller_init(void)
 	printk("Checking DSP diag (0x3070000C): 0x%08x\n", *(volatile uint32_t *)0x3070000C);
 	printk("Checking DSP check2 (0x30700018): 0x%08x\n", *(volatile uint32_t *)0x30700018);
 
-	/* Initialize LSF and start polling DSP diag */
 	lsf_init();
-	printk("LSF Initialized. Testing mailbox...\n");
-
-	/* Direct hardware test: write to AP mailbox registers to trigger DSP ISR */
-	printk("Writing test msg to mailbox AP data registers...\n");
-	*(volatile uint32_t *)0x46100010 = 0xDEAD0001;
-	*(volatile uint32_t *)0x46100014 = 0xDEAD0002;
-	*(volatile uint32_t *)0x46100018 = 0xDEAD0003;
-	*(volatile uint32_t *)0x4610001C = 0xDEAD0004;
-	__DSB();
-	/* Read back from AP side to verify writes */
-	printk("Readback DATA0 (0x46100010): 0x%08x\n", *(volatile uint32_t *)0x46100010);
-	printk("Readback DATA1 (0x46100014): 0x%08x\n", *(volatile uint32_t *)0x46100014);
-	/* Trigger CP (DSP) interrupt via AP_MAILBOX_CTRL bit 16+ch0 */
-	*(volatile uint32_t *)0x46100004 |= (1 << 16);
-	__DSB();
-
-	k_sleep(K_MSEC(500));
-	printk("AP CTRL after (0x46100004): 0x%08x\n", *(volatile uint32_t *)0x46100004);
-	printk("AP IRQ  after (0x46100008): 0x%08x\n", *(volatile uint32_t *)0x46100008);
-	printk("CP IRQ  after (0x46100028): 0x%08x\n", *(volatile uint32_t *)0x46100028);
-	printk("Monitoring DSP diag...\n");
+	printk("LSF Initialized. Monitoring DSP diag...\n");
 
 	while (1) {
 		k_sleep(K_MSEC(1000));
 		dcache_invalidate_range(0x30700000, 0x30700020);
 		uint32_t d  = *(volatile uint32_t *)0x3070000C;
 		uint32_t d2 = *(volatile uint32_t *)0x30700010;
-		uint32_t d3 = *(volatile uint32_t *)0x30700014;
-		printk("[DSP] prime=0x%08x  mac=0x%08x  mbox=0x%08x\n", d, d2, d3);
+		printk("[DSP] prime=0x%08x  mac=0x%08x\n", d, d2);
 	}
 }
 
