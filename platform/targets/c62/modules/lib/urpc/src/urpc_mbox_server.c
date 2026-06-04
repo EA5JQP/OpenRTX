@@ -37,9 +37,11 @@ static int8_t mbox_cb(uint32_t event, uint32_t param)
 	int8_t ret = 0;
 	switch(event) {
 	case CSK_MBX_EVENT_RECEIVE_COMPLETE:
+		*(volatile uint32_t *)0x6070000C = 0xDB000001;
 		ret = _urpc_recv_notify_server((urpc_server_stub *)&URPC_MBOX_SERVER_STUB, URPC_CONN_SERVER, param);
 		break;
 	case CSK_MBX_EVENT_SEND_COMPLETE:
+		*(volatile uint32_t *)0x6070000C = 0xDB000002;
 //		xSemaphoreTakeFromISR(send_sema, NULL);
 		xos_msgq_get(send_sema, &param);
 		break;

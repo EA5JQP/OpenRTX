@@ -37,7 +37,8 @@ int lsf_controller_init(void)
 
 	/* Initialize LSF and start polling DSP diag */
 	lsf_init();
-	printk("LSF Initialized. Monitoring DSP diag...\n");
+	printk("LSF Initialized. Mailbox IRQ status (0x46100020): 0x%08x\n", *(volatile uint32_t *)0x46100020);
+	printk("Monitoring DSP diag...\n");
 
 	while (1) {
 		k_sleep(K_MSEC(1000));
