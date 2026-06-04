@@ -37,7 +37,22 @@ int lsf_controller_init(void)
 
 	/* Initialize LSF and start polling DSP diag */
 	lsf_init();
-	printk("LSF Initialized. Mailbox IRQ status (0x46100020): 0x%08x\n", *(volatile uint32_t *)0x46100020);
+	printk("LSF Initialized. Testing mailbox...\n");
+
+	/* Direct hardware test: write to AP mailbox registers to trigger DSP ISR */
+	printk("Writing test msg to mailbox AP data registers...\n");
+	*(volatile uint32_t *)0x46100010 = 0xDEAD0001;
+	*(volatile uint32_t *)0x46100014 = 0xDEAD0002;
+	*(volatile uint32_t *)0x46100018 = 0xDEAD0003;
+	*(volatile uint32_t *)0x4610001C = 0xDEAD0004;
+	__DSB();
+	/* Trigger CP (DSP) interrupt via AP_MAILBOX_CTRL bit 16+ch0 */
+	*(volatile uint32_t *)0x46100004 |= (1 << 16);
+	__DSB();
+
+	k_sleep(K_MSEC(500));
+	printk("CP IRQ after send (0x46100028): 0x%08x\n", *(volatile uint32_t *)0x46100028);
+	printk("CP CTRL (0x46100024): 0x%08x\n", *(volatile uint32_t *)0x46100024);
 	printk("Monitoring DSP diag...\n");
 
 	while (1) {
