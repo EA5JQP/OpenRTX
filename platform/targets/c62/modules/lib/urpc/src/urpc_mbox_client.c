@@ -102,33 +102,3 @@ static urpc_client_stub URPC_MBOX_CLIENT_STUB = {
     .init_client = &urpc_mbox_init_client,
     .connect     = &urpc_mbox_connect,
 };
-
-/* Poll CP_MAILBOX_IRQ for incoming data from DSP.
- * The ARM ISR (IRQ_CMN_MAILBOX_VECTOR=21) doesn't fire,
- * so we poll and feed the URPC client pipeline. */
-int8_t URPC_Poll(void)
-{
-	volatile uint32_t *mbox_cp_irq  = (volatile uint32_t *)0x46100028;
-	volatile uint32_t *mbox_cp_data = (volatile uint32_t *)0x46100030;
-
-	uint32_t irq = *mbox_cp_irq;
-	if (!(irq & 0x7FFF)) return 0;
-
-	uint32_t ch;
-	for (ch = 0; ch < 15; ch++)
-		if (irq & (1 << ch)) break;
-	if (ch >= 15) return 0;
-
-	uint32_t d0 = mbox_cp_data[0];
-
-	/* Clear CP IRQ */
-	*mbox_cp_irq = (1 << ch);
-
-	/* Tell DSP we received */
-	volatile uint32_t *mbox_ap_ctrl = (volatile uint32_t *)0x46100004;
-	*mbox_ap_ctrl |= (1 << (15 + 16));
-
-	extern int8_t _urpc_recv_notify_client(urpc_client_stub*, urpc_connection*, uint8_t);
-	return _urpc_recv_notify_client((urpc_client_stub*)&URPC_MBOX_CLIENT_STUB,
-					 URPC_CONN_CLIENT, ch);
-}
