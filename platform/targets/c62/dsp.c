@@ -39,7 +39,7 @@ void lsf_dsp_load(const void *addr, uint32_t size)
 	 * Without these, mailbox hardware sets IRQ bits but
 	 * the interrupt never reaches either core's ISR. */
 	IP_SYSCTRL->REG_AP2CP_INTE.all = 0xFFFFFFFF;   /* 0x46000080: unmask all AP->CP */
-	IP_SYSCTRL->REG_CP2AP_INTE.all = (1 << 21);     /* 0x46000064: bit 21 = mailbox IRQ */
+	IP_SYSCTRL->REG_CP2AP_INTE.all = (1 << 23);     /* 0x46000064: bit 23 = mailbox IRQ */
 
 	/* Set boot address */
 	__HAL_SYS_CP_SET_BOOT_ADDR(CP_PSRAM_BASE);

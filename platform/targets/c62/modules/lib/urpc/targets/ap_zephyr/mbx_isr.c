@@ -3,12 +3,12 @@
 
 #include <venus_ap.h>
 
-extern void Interrupt21_Handler(void);
+extern void Interrupt23_Handler(void);
 
 static void
 csk_mbx_isr(const struct device *dev)
 {
-	Interrupt21_Handler();
+	Interrupt23_Handler();
 }
 
 static int install_mbx_isr(void)
