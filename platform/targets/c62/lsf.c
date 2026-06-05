@@ -54,8 +54,9 @@ int lsf_controller_init(void)
 		dcache_invalidate_range(0x30700000, 0x30700020);
 		uint32_t d  = *(volatile uint32_t *)0x3070000C;
 		uint32_t d2 = *(volatile uint32_t *)0x30700010;
+		uint32_t d3 = *(volatile uint32_t *)0x30700014;
 		uint32_t mbox_irq = *(volatile uint32_t *)0x46100028;
-		printk("[DSP] prime=0x%08x  mac=0x%08x  mbox_cp_irq=0x%08x\n", d, d2, mbox_irq);
+		printk("[DSP] pr=0x%08x mc=0x%08x mb=0x%08x ir=0x%08x\n", d, d2, d3, mbox_irq);
 	}
 }
 
