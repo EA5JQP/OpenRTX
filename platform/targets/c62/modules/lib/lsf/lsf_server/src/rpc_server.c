@@ -36,17 +36,14 @@ RPC_Server_init(void)
 void
 RPC_Server_Start()
 {
-    int8_t ret;
-
-    // 该api的语义就是开始运行
     urpc_init_server(RPC_Server_stub, & rpc_server_cb);
 
-    for(;;) {
-        ret = urpc_accept(RPC_Server_stub);
-        if (URPC_SUCCESS == ret) break;
+    /* Try accept once with 1-second timeout. Caller must retry
+     * via RPC_Server_TryAccept() while polling mailbox. */
+    urpc_accept(RPC_Server_stub);
+}
 
-        CLOGD("urpc_accept retry.\n");
-    }
-
-    CLOGD("urpc_accept succeed.\n");
+int8_t RPC_Server_TryAccept(void)
+{
+    return urpc_accept(RPC_Server_stub);
 }
