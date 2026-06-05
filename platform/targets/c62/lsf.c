@@ -36,7 +36,18 @@ int lsf_controller_init(void)
 	printk("Checking DSP check2 (0x30700018): 0x%08x\n", *(volatile uint32_t *)0x30700018);
 
 	lsf_init();
-	printk("LSF Initialized. Monitoring DSP diag...\n");
+	printk("LSF Initialized. Testing mailbox ping...\n");
+
+	/* Send a single test PING to DSP via mailbox */
+	*(volatile uint32_t *)0x46100010 = 0xDEAD0001;
+	*(volatile uint32_t *)0x46100014 = 0xDEAD0002;
+	*(volatile uint32_t *)0x46100018 = 0xDEAD0003;
+	*(volatile uint32_t *)0x4610001C = 0xDEAD0004;
+	__DSB();
+	*(volatile uint32_t *)0x46100004 |= (1 << 16);
+	__DSB();
+
+	printk("PING sent. Monitoring DSP diag...\n");
 
 	while (1) {
 		k_sleep(K_MSEC(1000));
