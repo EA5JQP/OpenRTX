@@ -40,15 +40,8 @@ urpc_client_stub* urpc_mbox_get_client_stub(void) {
 
 int8_t urpc_mbox_send_client(urpc_connection* s_conn, uint8_t* buf, uint16_t chn)
 {
-	static int sc = 0;
 	urpc_sem_take(send_sema, urpc_max_delay);
-	if ((++sc & 0x3FF) == 1)
-		printk("mbox_send_client: sem taken, calling MBX_Send...\n");
-	int8_t ret = urpc_mbox_send(s_conn, buf, chn);
-	if ((sc & 0x3FF) == 1)
-		printk("mbox_send_client: MBX_Send returned %d\n", ret);
-	urpc_sem_give(send_sema);  /* release immediately — ISR for send-complete may not fire */
-	return ret;
+	return urpc_mbox_send(s_conn, buf, chn);
 }
 
 int8_t urpc_mbox_init_client(urpc_client* client) {
@@ -67,9 +60,7 @@ int8_t urpc_mbox_connect(urpc_client* client, urpc_connection* conn, urpc_frame*
 	req.header.eps = 0;
 	req.rpc.dst_id = 1;
 	req.rpc.src_id = 0xff;
-	printk("mbox_connect: sending PING...\n");
 	err = urpc_trans_sync_client((urpc_client_stub *)&URPC_MBOX_CLIENT_STUB, &req, &resp);
-	printk("mbox_connect: result=%d\n", err);
 	if(err) { // server not ready
 		//clear send_sema
 		urpc_sem_give_from_isr(send_sema, NULL);  //set semaphore
@@ -102,33 +93,3 @@ static urpc_client_stub URPC_MBOX_CLIENT_STUB = {
     .init_client = &urpc_mbox_init_client,
     .connect     = &urpc_mbox_connect,
 };
-
-/* Poll CP_MAILBOX_IRQ for incoming data from DSP.
- * The ARM ISR (IRQ_CMN_MAILBOX_VECTOR=21) doesn't fire,
- * so we poll and feed the URPC client pipeline. */
-int8_t URPC_Poll(void)
-{
-	volatile uint32_t *mbox_cp_irq  = (volatile uint32_t *)0x46100028;
-	volatile uint32_t *mbox_cp_data = (volatile uint32_t *)0x46100030;
-
-	uint32_t irq = *mbox_cp_irq;
-	if (!(irq & 0x7FFF)) return 0;
-
-	uint32_t ch;
-	for (ch = 0; ch < 15; ch++)
-		if (irq & (1 << ch)) break;
-	if (ch >= 15) return 0;
-
-	uint32_t d0 = mbox_cp_data[0];
-
-	/* Clear CP IRQ */
-	*mbox_cp_irq = (1 << ch);
-
-	/* Tell DSP we received */
-	volatile uint32_t *mbox_ap_ctrl = (volatile uint32_t *)0x46100004;
-	*mbox_ap_ctrl |= (1 << (15 + 16));
-
-	extern int8_t _urpc_recv_notify_client(urpc_client_stub*, urpc_connection*, uint8_t);
-	return _urpc_recv_notify_client((urpc_client_stub*)&URPC_MBOX_CLIENT_STUB,
-					 URPC_CONN_CLIENT, ch);
-}

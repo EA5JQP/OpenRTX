@@ -59,20 +59,16 @@ void
 RPC_Client_Start(void)
 {
     int8_t ret;
-    int attempts = 0;
 
     // 该api的语义就是开始运行
     urpc_init_client(RPC_Client_stub, & rpc_client_cb);
 
     for(;;) {
-        attempts++;
-        if ((attempts & 0x3FF) == 1)
-            printk("RPC_Client_Start: connect attempt %d...\n", attempts);
         ret = urpc_connect(RPC_Client_stub);
         if (URPC_SUCCESS == ret) break;
     }
 
-    printk("urpc_accept succeed.\n");
+    CLOGD("urpc_accept succeed.\n");
 }
 
 static void

@@ -38,6 +38,7 @@ RPC_Server_Start()
 {
     int8_t ret;
 
+    // 该api的语义就是开始运行
     urpc_init_server(RPC_Server_stub, & rpc_server_cb);
 
     for(;;) {
@@ -48,14 +49,4 @@ RPC_Server_Start()
     }
 
     CLOGD("urpc_accept succeed.\n");
-}
-
-void RPC_Server_InitOnly(void)
-{
-    urpc_init_server(RPC_Server_stub, & rpc_server_cb);
-}
-
-int8_t RPC_Server_TryAccept(void)
-{
-    return urpc_accept(RPC_Server_stub);
 }
