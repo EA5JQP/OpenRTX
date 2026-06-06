@@ -19,7 +19,7 @@ target_sources(app
     ${OPENRTX_ROOT}/platform/drivers/keyboard/keyboard_c62.c
 
     ${OPENRTX_ROOT}/platform/targets/c62/platform.c
-    ${OPENRTX_ROOT}/platform/targets/c62/audio_c62.c
+    ${OPENRTX_ROOT}/platform/drivers/stubs/audio_stub.c
     ${OPENRTX_ROOT}/platform/targets/c62/dsp.c
     ${OPENRTX_ROOT}/platform/targets/c62/lsf.c
 )
