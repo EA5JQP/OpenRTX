@@ -26,7 +26,7 @@ static void diag_poll_thread(void *arg1, void *arg2, void *arg3)
 	printk("DSP diag monitoring started.\n");
 	while (1) {
 		k_sleep(K_MSEC(1000));
-		dcache_invalidate_range(0x30700000, 0x30700020);
+		dcache_invalidate_range(0x30700000, 0x30700040);
 		uint32_t d  = *(volatile uint32_t *)0x3070000C;
 		uint32_t d2 = *(volatile uint32_t *)0x30700010;
 		printk("[DSP] prime=0x%08x  mac=0x%08x\n", d, d2);
@@ -56,16 +56,6 @@ int lsf_controller_init(void)
 
 	LOG_DBG("Initializing LSF service controller");
 
-	STRUCT_SECTION_FOREACH(lsf_service, service) {
-		LOG_DBG("Initializing service %s", service->name);
-		ret = service->init();
-		if (ret != 0) {
-			LOG_ERR("Failed to initialize service %s: %d", service->name, ret);
-			return ret;
-		}
-	}
-
-	LOG_DBG("All services initialized");
 	inited = true;
 	return 0;
 }
