@@ -50,12 +50,6 @@ int lsf_controller_init(void)
 	printk("Checking DSP diag (0x3070000C): 0x%08x\n", *(volatile uint32_t *)0x3070000C);
 	printk("Checking DSP check2 (0x30700018): 0x%08x\n", *(volatile uint32_t *)0x30700018);
 
-	/* lsf_init() is needed — creates shared SRAM allocators.
-	 * lsf_connect() would block waiting for DSP, so we skip it. */
-	lsf_init();
-
-	LOG_DBG("Initializing LSF service controller");
-
 	inited = true;
 	return 0;
 }
